@@ -1,9 +1,14 @@
 version: '3'
 
+volumes:
+  elasticsearch_data:
+
 services:
   elasticsearch:
     image: elasticsearch:5
     command: "-E network.host=0.0.0.0 -E discovery.zen.minimum_master_nodes=1"
+    volumes:
+    - elasticsearch_data:/usr/share/elasticsearch/data
     environment:
       ES_JAVA_OPTS: "-Xms1g -Xmx1g -Des.path.conf=/etc/elasticsearch"
   logstash:
@@ -12,10 +17,11 @@ services:
     volumes:
       - ./logstash/config:/etc/logstash/conf.d
       - ./logstash/templates:/templates
-    ports:
-      - "127.0.0.1:5000:5000"
     depends_on:
       - elasticsearch
+    networks:
+      - outside
+      - default
   kibana:
     image: kibana:5
     volumes:
